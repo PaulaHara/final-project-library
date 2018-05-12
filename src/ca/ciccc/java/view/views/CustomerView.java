@@ -1,6 +1,5 @@
 package ca.ciccc.java.view.views;
 
-import ca.ciccc.java.Exceptions.InvalidCustomerIDException;
 import ca.ciccc.java.controller.LibraryController;
 
 import java.time.LocalDate;
@@ -20,7 +19,7 @@ public class CustomerView extends Views {
         outputReader.printOutput("Give a unique Customer ID with 2 uppercase letters and 3 digits " +
                 "(ex: AB123, A12B3, 123AB,...):");
         outputReader.printOutputInLine("Customer ID: ");
-        String customerID = inputReader.getStringInput();
+        String customerID = inputReader.getStringInput().toUpperCase();
 
         if(controller.verifyIfCustomerExist(customerID)){
             this.outputReader.printOutput("Error: There is a customer registered with same Customer ID!");
@@ -45,7 +44,7 @@ public class CustomerView extends Views {
     @Override
     public void removeView(LibraryController controller) {
         outputReader.printOutputInLine("Give the customer ID:");
-        String customerID = inputReader.getStringInput();
+        String customerID = inputReader.getStringInput().toUpperCase();
 
         outputReader.printOutput(controller.removeCustomer(customerID));
         outputReader.printOutput("");
@@ -57,7 +56,7 @@ public class CustomerView extends Views {
      */
     public void inactiveCustomerView(LibraryController controller) {
         outputReader.printOutputInLine("Give the customer ID:");
-        String customerID = inputReader.getStringInput();
+        String customerID = inputReader.getStringInput().toUpperCase();
 
         outputReader.printOutput(controller.inactiveCustomer(customerID));
         outputReader.printOutput("");

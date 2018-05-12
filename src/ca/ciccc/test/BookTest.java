@@ -2,9 +2,10 @@ package ca.ciccc.test;
 
 import ca.ciccc.java.controller.service.AuthorService;
 import ca.ciccc.java.controller.service.BookService;
-import ca.ciccc.java.controller.service.CustomerService;
 import ca.ciccc.java.db.ConnectionFactory;
-import ca.ciccc.java.model.*;
+import ca.ciccc.java.model.Author;
+import ca.ciccc.java.model.Book;
+import ca.ciccc.java.model.Genre;
 import org.junit.*;
 import org.junit.runners.MethodSorters;
 

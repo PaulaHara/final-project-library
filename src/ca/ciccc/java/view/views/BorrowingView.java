@@ -14,9 +14,9 @@ public class BorrowingView extends Views {
     @Override
     public void addView(LibraryController controller) {
         outputReader.printOutput("Insert customer ID:");
-        String customerID = inputReader.getStringInput();
+        String customerID = inputReader.getStringInput().toUpperCase();
         outputReader.printOutput("Choose a book: (insert the id of the book)");
-        controller.printBooksWithIds();
+        controller.printBooks();
         int bookId = inputReader.getIntInput();
 
         outputReader.printOutput(controller.borrowBook(customerID, bookId));
@@ -30,15 +30,17 @@ public class BorrowingView extends Views {
     @Override
     public void removeView(LibraryController controller) {
         outputReader.printOutput("Insert customer id:");
-        String customerID = inputReader.getStringInput();
+        String customerID = inputReader.getStringInput().toUpperCase();
 
-        controller.printBooksBorrowed(customerID);
+        if(controller.customerIsBorrowingBooks(customerID)) {
+            outputReader.printOutput("Choose a book: (insert the id of the book)");
+            controller.printBooksBorrowed(customerID);
+            int bookId = inputReader.getIntInput();
 
-        outputReader.printOutput("Choose a book: (insert the id of the book)");
-        controller.printBooksWithIds();
-        int bookId = inputReader.getIntInput();
-
-        outputReader.printOutput(controller.returnBook(customerID, bookId));
+            outputReader.printOutput(controller.returnBook(customerID, bookId));
+        }else{
+            outputReader.printOutput("This customer is not borrowing any book!");
+        }
         outputReader.printOutput("");
     }
 }

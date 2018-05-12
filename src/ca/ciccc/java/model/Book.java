@@ -233,23 +233,12 @@ public class Book implements Comparable<Book> {
     }
 
     /**
-     * Return all the information about this book and the id
+     * Return all the information about this book
      * @return
      */
-    public String toStringWithId() {
+    public String toString() {
         return String.format("%5s %15s %15s %20s %10s %10s %15s %15s %15s", getId(), getTitle(), getAuthor(),
                 getYearPublished(), getEdition(), getIsbn(), getGenre().getDescription(), getNumberOfCopies(),
                 getCopiesAvailable());
-    }
-
-    /**
-     * Return all the information about this book
-     * @return string
-     */
-    @Override
-    public String toString() {
-        return String.format("%15s %15s %20s %10s %10s %15s %15s %15s",
-                getTitle(), getAuthor(), getYearPublished(), getEdition(), getIsbn(), getGenre().getDescription(),
-                getNumberOfCopies(), getCopiesAvailable());
     }
 }

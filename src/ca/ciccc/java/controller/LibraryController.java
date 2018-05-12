@@ -95,7 +95,7 @@ public class LibraryController {
         bookService.createBook(new Book(title, author.getId(), yearPublished, edition, isbn,
                 getGenre(genreCode), numberOfCopies, copiesAvailable));
 
-        this.updateLibrary(bookService.getAllBooks(), library.getCustomers(), library.getBorrowings());
+        this.updateLibrary(bookService.getAllBooks(), customerService.getAllCustomers(), borrowingService.getAllBorrowings());
 
         return "Book add successfully";
     }
@@ -118,7 +118,7 @@ public class LibraryController {
         bookService.createBook(new Book(title, author.getId(), yearPublished, edition, isbn,
                 getGenre(genreCode), numberOfCopies, copiesAvailable));
 
-        this.updateLibrary(bookService.getAllBooks(), library.getCustomers(), library.getBorrowings());
+        this.updateLibrary(bookService.getAllBooks(), customerService.getAllCustomers(), borrowingService.getAllBorrowings());
 
         return "Book add successfully";
     }
@@ -160,7 +160,7 @@ public class LibraryController {
         if(book != null){
             bookService.deleteBook(book.getId());
 
-            this.updateLibrary(bookService.getAllBooks(), library.getCustomers(), library.getBorrowings());
+            this.updateLibrary(bookService.getAllBooks(), customerService.getAllCustomers(), borrowingService.getAllBorrowings());
 
             return "Book removed successfully!";
         }else{
@@ -232,7 +232,7 @@ public class LibraryController {
         }
         customerService.createCustomer(customer);
 
-        this.updateLibrary(library.getBooks(), customerService.getAllCustomers(), library.getBorrowings());
+        this.updateLibrary(bookService.getAllBooks(), customerService.getAllCustomers(), borrowingService.getAllBorrowings());
 
         return "Customer add successfully!";
     }
@@ -246,7 +246,7 @@ public class LibraryController {
         if(customer != null) {
             this.customerService.deleteCustomer(customer.getId());
 
-            this.updateLibrary(library.getBooks(), customerService.getAllCustomers(), library.getBorrowings());
+            this.updateLibrary(bookService.getAllBooks(), customerService.getAllCustomers(), borrowingService.getAllBorrowings());
 
             return "Customer removed.";
         }
@@ -274,7 +274,7 @@ public class LibraryController {
                 customer.setActive(true);
                 customerService.updateCustomer(customer);
 
-                this.updateLibrary(library.getBooks(), customerService.getAllCustomers(), library.getBorrowings());
+                this.updateLibrary(bookService.getAllBooks(), customerService.getAllCustomers(), borrowingService.getAllBorrowings());
                 return "Customer was activated.";
             }
         }
@@ -293,7 +293,7 @@ public class LibraryController {
                 customer.setActive(false);
                 customerService.updateCustomer(customer);
 
-                this.updateLibrary(library.getBooks(), customerService.getAllCustomers(), library.getBorrowings());
+                this.updateLibrary(bookService.getAllBooks(), customerService.getAllCustomers(), borrowingService.getAllBorrowings());
 
                 return "Customer was inactivated.";
             }
@@ -348,7 +348,7 @@ public class LibraryController {
         // Activate customer, if he was inactivated before
         this.activeCustomer(customerID);
 
-        this.updateLibrary(library.getBooks(), library.getCustomers(), borrowingService.getAllBorrowings());
+        this.updateLibrary(bookService.getAllBooks(), customerService.getAllCustomers(), borrowingService.getAllBorrowings());
 
         return msg+"\n"+customer.getFirstName()+" has "
                 +borrowingService.getBooksBorrowed(library.getBorrowings().get(customer.getCustomerID()).getId()).size()
@@ -390,7 +390,7 @@ public class LibraryController {
         borrowingService.returnBook(bookId, borrowing.getId());
 
         // If there is no book borrowed for a customer, borrowing has finished
-        if (borrowingService.getBooksBorrowed(borrowing.getId()).size() == 0) {
+        if (!customerIsBorrowingBooks(customer.getCustomerID())) {
             borrowing.setFinished(true);
         }
         borrowing.setReturnDate(LocalDate.now());
@@ -399,10 +399,18 @@ public class LibraryController {
         book.setCopiesAvailable(book.getCopiesAvailable() + 1);
         bookService.updateBook(book);
 
-        this.updateLibrary(library.getBooks(), library.getCustomers(), borrowingService.getAllBorrowings());
+        this.updateLibrary(bookService.getAllBooks(), customerService.getAllCustomers(), borrowingService.getAllBorrowings());
 
         return "Book returned.\nCustomer "+customer.getFirstName()+" "+customer.getLastName()+" has" +
-                borrowing.getBooksId().size()+" book(s) borrowed.";
+                borrowingService.getBooksBorrowed(borrowing.getId()).size()+" book(s) borrowed.";
+    }
+
+    public boolean customerIsBorrowingBooks(String customerID) {
+        Borrowing borrowing = library.getBorrowings().get(customerID);
+        if(borrowing != null){
+            return borrowingService.getBooksBorrowed(borrowing.getId()) != null;
+        }
+        return false;
     }
 
     /**
@@ -412,10 +420,7 @@ public class LibraryController {
         if(library.getBorrowings().get(customerID) != null) {
             List<Book> books = bookService.getBorrowedBooks(library.getBorrowings().get(customerID).getId());
 
-            String formatString = "%5s %15s %15s %20s %10s %10s %15s %15s %15s";
-            String[] objects = {"ID", "Title", "Author", "Year Published",
-                    "Edition", "ISBN", "Genre", "Num. Copies", "Available"};
-            this.printBooks(books, formatString, objects);
+            this.printBooks(books);
         }else{
             Customer customer = customerService.getCustomerByCustomerID(customerID);
             String errorMsg;
@@ -432,35 +437,32 @@ public class LibraryController {
      * Print books sorted by edition
      */
     public void printBooksSortedByEdition(){
-        //List<Book> sortedBookList = new ArrayList(bookService.getAllBooks());
         List<Book> sortedBookList = new ArrayList(library.getBooks());
 
         Collections.sort(sortedBookList);
-        String formatString = "%15s %15s %20s %10s %10s %15s %15s %15s";
-        String[] objects = {"Title", "Author", "Year Published",
-                "Edition", "ISBN", "Genre", "Num. Copies", "Available"};
-        this.printBooks(sortedBookList, formatString, objects);
+
+        this.printBooks(sortedBookList);
     }
 
     /**
      * Print books sorted by published year
      */
     public void printBooksSortedByYear(){
-        //List<Book> sortedBookList = new ArrayList(bookService.getAllBooks());
         List<Book> sortedBookList = new ArrayList(library.getBooks());
 
         Collections.sort(sortedBookList, new BookSortByYearComparator());
-        String formatString = "%15s %15s %20s %10s %10s %15s %15s %15s";
-        String[] objects = {"Title", "Author", "Year Published",
-                "Edition", "ISBN", "Genre", "Num. Copies", "Available"};
-        this.printBooks(sortedBookList, formatString, objects);
+
+        this.printBooks(sortedBookList);
     }
 
     /**
-     * Receive a sorted book array and print
-     * @param sortedBookList
+     * Print books showing ids
      */
-    private void printBooks(List<Book> sortedBookList, String formatString, String[] objects){
+    public void printBooks(List<Book> sortedBookList){
+        String formatString = "%5s %15s %15s %20s %10s %10s %15s %15s %15s";
+        String[] objects = {"ID", "Title", "Author", "Year Published",
+                "Edition", "ISBN", "Genre", "Num. Copies", "Available"};
+
         System.out.printf(formatString, objects);
         outputReader.printOutput("");
 
@@ -473,21 +475,8 @@ public class LibraryController {
     /**
      * Print books showing ids
      */
-    public void printBooksWithIds(){
-        //List<Book> sortedBookList = new ArrayList(bookService.getAllBooks());
-        List<Book> books = new ArrayList(library.getBooks());
-
-        String formatString = "%5s %15s %15s %20s %10s %10s %15s %15s %15s";
-        String[] objects = {"ID", "Title", "Author", "Year Published",
-                "Edition", "ISBN", "Genre", "Num. Copies", "Available"};
-
-        System.out.printf(formatString, objects);
-        outputReader.printOutput("");
-
-        for(Book book : books){
-            outputReader.printOutput(book.toStringWithId());
-        }
-        outputReader.printOutput("");
+    public void printBooks(){
+        printBooks(new ArrayList(library.getBooks()));
     }
 
     /**
